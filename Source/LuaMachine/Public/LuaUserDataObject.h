@@ -57,6 +57,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Lua")
 	TArray<FString> GetObjectUFunctions(bool bOnlyPublic=true);
+  
+  virtual UObject* GetContext() { return this; }
 
 protected:
 	TSharedPtr<FLuaSmartReference> AddLuaSmartReference(FLuaValue Value);

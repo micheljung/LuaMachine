@@ -696,7 +696,7 @@ FLuaValue ULuaState::ToLuaValue(int Index, lua_State* State)
 			if (UserData->Context.IsValid())
 			{
 				LuaValue.Type = UserData->Type;
-				LuaValue.Object = UserData->Context.Get();
+				LuaValue.Object = GetContext(UserData);
 				LuaValue.LuaState = this;
 			}
 			break;
@@ -705,7 +705,7 @@ FLuaValue ULuaState::ToLuaValue(int Index, lua_State* State)
 			{
 				LuaValue.Type = UserData->Type;
 				LuaValue.FunctionName = UserData->Function->GetFName();
-				LuaValue.Object = UserData->Context.Get();
+				LuaValue.Object = GetContext(UserData);
 				LuaValue.LuaState = this;
 			}
 			break;
@@ -720,6 +720,13 @@ int32 ULuaState::GetTop()
 	return lua_gettop(L);
 }
 
+UObject* ULuaState::GetContext(FLuaUserData* UserData)
+{
+  UObject* RawContext = UserData->Context.Get();
+  ULuaUserDataObject* LuaObj = Cast<ULuaUserDataObject>(RawContext);
+  return LuaObj ? LuaObj->GetContext() : RawContext;
+}
+
 int ULuaState::MetaTableFunctionUserData__index(lua_State* L)
 {
 
@@ -732,7 +739,7 @@ int ULuaState::MetaTableFunctionUserData__index(lua_State* L)
 	}
 
 	TMap<FString, FLuaValue>* TablePtr = nullptr;
-	UObject* Context = UserData->Context.Get();
+	UObject* Context = GetContext(UserData);
 
 	ULuaUserDataObject* LuaUserDataObject = nullptr;
 	ULuaComponent* LuaComponent = nullptr;
@@ -793,7 +800,7 @@ int ULuaState::MetaTableFunctionUserData__newindex(lua_State* L)
 	}
 
 	TMap<FString, FLuaValue>* TablePtr = nullptr;
-	UObject* Context = UserData->Context.Get();
+	UObject* Context = GetContext(UserData);
 
 	ULuaComponent* LuaComponent = Cast<ULuaComponent>(Context);
 
@@ -913,7 +920,7 @@ int ULuaState::MetaTableFunctionUserData__eq(lua_State* L)
 		return luaL_error(L, "invalid UObject for UserData %p", UserData2);
 	}
 
-	if (UserData->Type == UserData2->Type && UserData->Context.Get() == UserData2->Context.Get())
+	if (UserData->Type == UserData2->Type && GetContext(UserData) == UserData2->Context.Get())
 	{
 		if (UserData->Type == ELuaValueType::UFunction)
 		{
@@ -952,7 +959,7 @@ int ULuaState::MetaTableFunctionUserData__gc(lua_State* L)
 		return luaL_error(L, "invalid UObject for UserData %p", UserData);
 	}
 
-	ULuaUserDataObject* LuaUserDataObject = Cast<ULuaUserDataObject>(UserData->Context.Get());
+	ULuaUserDataObject* LuaUserDataObject = Cast<ULuaUserDataObject>(GetContext(UserData));
 	if (LuaUserDataObject)
 	{
 		LuaState->TrackedLuaUserDataObjects.Remove(LuaUserDataObject);

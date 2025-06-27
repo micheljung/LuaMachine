@@ -374,6 +374,8 @@ public:
 	FLuaValue CreateLuaLazyTable();
 
 	bool RunFile(const FString& Filename, bool bIgnoreNonExistent, int NRet = 0, bool bNonContentDirectory=false);
+  
+  static UObject* GetContext(FLuaUserData* UserData);
 
 	static int MetaTableFunctionUserData__index(lua_State* L);
 	static int MetaTableFunctionUserData__newindex(lua_State* L);
